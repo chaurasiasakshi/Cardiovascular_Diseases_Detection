@@ -15,6 +15,13 @@ data = load_data()
 # Title of the app
 st.title("Heart Disease Prediction")
 
+from PIL import Image
+
+# Load and display an image
+image = Image.open('hd.webp')
+st.image(image, use_column_width=True)
+
+
 # Display the dataset
 if st.checkbox("Show raw data"):
     st.write(data)

@@ -3,6 +3,13 @@ import streamlit as st
 # Title of the dashboard
 st.title("Cardiovascular Diseases Detection Dashboard")
 
+from PIL import Image
+
+# Load and display an image
+image = Image.open('pc.webp')
+st.image(image, caption='', use_column_width=True)
+
+
 # Sidebar for user inputs
 st.sidebar.header("User Input Features")
 
