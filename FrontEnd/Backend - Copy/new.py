@@ -1,9 +1,10 @@
 import streamlit as st
 import sqlite3
 from home import home_page
+# import app
 
 # Database connection
-conn = sqlite3.connect('newDB.db')
+conn = sqlite3.connect('form.db')
 cur = conn.cursor()
 
 # Function to create the user table
@@ -42,11 +43,6 @@ def registration_form():
             st.experimental_rerun()
         else:
             st.error("Passwords do not match")
-            # ****************************************
-    st.write("Already have an account?")
-    if st.button("Go to Login"):
-        st.session_state.page = "login"
-        st.experimental_rerun()
            
 
 # Login form
