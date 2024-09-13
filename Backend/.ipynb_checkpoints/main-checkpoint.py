@@ -2,12 +2,16 @@ import streamlit as st
 import sqlite3
 import base64
 
-# connection to the SQLite database
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+
+# Function to create a connection to the SQLite database
 def create_connection():
     conn = sqlite3.connect('users.db')
     return conn
 
-# create the users table
+# Function to create the users table
 def create_table(conn):
     try:
         conn.execute('''
@@ -21,7 +25,7 @@ def create_table(conn):
     except Exception as e:
         st.error(f"Error creating table: {e}")
 
-# add a new user to the database
+# Function to add a new user to the database
 def add_user(conn, username, password):
     try:
         conn.execute('''
@@ -45,14 +49,11 @@ def get_base64_of_bin_file(bin_file):
         data = f.read()
     return base64.b64encode(data).decode()
 
-# Image
-img_file = "background.jpg"  
-img_base64 = get_base64_of_bin_file(img_file)
+# Path to your local image
+img_file = "background.jpg"  # Update this to your image path
 
-# Logo Image
-logo_file = "LOGO.png"  # Replace with your logo file name
-logo_base64 = get_base64_of_bin_file(logo_file)
-logo_img = f"data:image/png;base64,{logo_base64}"
+# Get the base64 string of the image
+img_base64 = get_base64_of_bin_file(img_file)
 
 # Custom CSS for background image and nav bar
 page_bg_img = f'''
@@ -63,13 +64,22 @@ page_bg_img = f'''
     background-repeat: no-repeat;
     background-attachment: fixed;
 }}
+.navbar {{
+    display: flex;
+    justify-content: left;
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 5px;
+}}
+.navbar button {{
+    margin: 0 10px;
+    font-size: 16px;
+}}
 </style>
 '''
 
 # Registration Page
 def registration_page(conn):
-    st.markdown(page_bg_img, unsafe_allow_html=True)
-
     st.title("Registration Page")
     with st.form("registration_form"):
         username = st.text_input("Username")
@@ -93,8 +103,6 @@ def registration_page(conn):
 
 # Login Page
 def login_page(conn):
-    st.markdown(page_bg_img, unsafe_allow_html=True)
-
     st.title("Login Page")
     with st.form("login_form"):
         username = st.text_input("Username")
@@ -115,74 +123,83 @@ def login_page(conn):
         st.session_state['page'] = 'registration'
         st.experimental_rerun()
 
-
-# Custom CSS for background color
-page_bg_color = '''
-<style>
-[data-testid="stAppViewContainer"] {
-background-color:skyblue;
- 
-}
-
-
-[data-testid="stHeader"] {
-    background-color: rgba(0, 0, 0, 0); 
-    font-size: 18px; 
-}
-
-[data-testid="stSidebar"] {
-    background-color: #E0F7FA; 
-    color: white; 
-    font-size: 18px; 
-}
-</style>
-
-'''
-
-
-# Landing Page
+# Landing Page with Navigation Bar
 def landing_page():
-    st.markdown(page_bg_color, unsafe_allow_html=True)
-    # st.markdown(page_bg_img, unsafe_allow_html=True)
-
-    # Sidebar with Logo
-    st.sidebar.image(logo_img, use_column_width=True)
-    # st.markdown(sidebar_bg_color, unsafe_allow_html=True)
-    st.sidebar.title("Navigation")
-    selection = st.sidebar.radio("Go to", ["Home", "Analysis", "Predict","Contact"])
-
-    # st.title("Welcome to the Landing Page")
-
-    if selection == "Home":
-        st.subheader("Home")
-        st.write("This is the home page. You can add content or widgets here.")
-    elif selection == "Analysis":
-        st.subheader("Profile")
-        st.write("This is the profile page. You can add user profile details here.")
+    st.markdown(page_bg_img, unsafe_allow_html=True)
     
-    elif selection == "Predict":
-       
-        prediction_page()
-        
-    elif selection == "Contact":
-        contact_page()  
+    st.markdown('<div class="navbar">', unsafe_allow_html=True)
+    if st.button("Analysis"):
+        st.session_state['page'] = 'analysis'
+        st.experimental_rerun()
+    if st.button("Prediction"):
+        st.session_state['page'] = 'prediction'
+        st.experimental_rerun()
+    if st.button("Contact"):
+        st.session_state['page'] = 'contact'
+        st.experimental_rerun()
+    if st.button("Logout"):
+        st.session_state['authenticated'] = False
+        st.session_state['page'] = 'login'
+        st.experimental_rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
+    st.write("Welcome to the HRIDAI Landing Page!")
+
+
+# Sample heart disease data (you can replace this with your real data)
+def get_sample_heart_disease_data():
+    data = {
+        'age': np.random.randint(29, 80, 100),
+        'cholesterol': np.random.randint(150, 300, 100),
+        'heart_disease': np.random.choice([0, 1], 100, p=[0.6, 0.4])  # 0 = no heart disease, 1 = heart disease
+    }
+    return pd.DataFrame(data)
+
+# Function for the analysis page
+def analysis_page():
+    st.title("Analysis of Heart Disease Data")
+    
+    # Fetch sample data
+    df = get_sample_heart_disease_data()
+    
+    st.write("Here is a summary of the heart disease dataset:")
+    st.dataframe(df.head())  # Display first few rows of the dataset
+
+    # Plot: Distribution of Age vs Cholesterol levels
+    fig, ax = plt.subplots()
+    colors = {0: 'blue', 1: 'red'}
+    ax.scatter(df['age'], df['cholesterol'], c=df['heart_disease'].apply(lambda x: colors[x]))
+    ax.set_xlabel('Age')
+    ax.set_ylabel('Cholesterol Levels')
+    ax.set_title('Age vs Cholesterol Levels (Blue = No Heart Disease, Red = Heart Disease)')
+
+    # Display the graph
+    st.pyplot(fig)
+
+    if st.button("Back to Home"):
+        st.session_state['page'] = 'landing'
+        st.experimental_rerun()
+
+
+
+
+# Function for the prediction page
 def prediction_page():
-    # st.markdown(page_bg_img, unsafe_allow_html=True)
+    st.markdown(page_bg_img, unsafe_allow_html=True)
     
-    # st.markdown(
-    #     """
-    #     <style>
-    #     .main {
-    #         display: flex;
-    #         justify-content: center;
-    #         align-items: center;
-    #         height: 100vh;
-    #     }
-    #     </style>
-    #     """,
-    #     unsafe_allow_html=True
-    # )
+    st.markdown(
+        """
+        <style>
+        .main {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
 
     with st.form(key='heart_disease_form'):
         st.title('Heart Disease Detection Form')
@@ -205,10 +222,28 @@ def prediction_page():
         # Handle form submission
         if submit_button:
             st.write("Form Submitted Successfully")
+            st.write(f"Age: {age}")
+            st.write(f"Sex: {sex}")
+            st.write(f"Chest Pain Type: {cp}")
+            st.write(f"Resting Blood Pressure: {trtbps}")
+            st.write(f"Cholesterol: {chol}")
+            st.write(f"Fasting Blood Sugar > 120 mg/dl: {fbs}")
+            st.write(f"Resting Electrocardiographic Results: {restecg}")
+            st.write(f"Maximum Heart Rate Achieved: {thalachh}")
+            st.write(f"Exercise Induced Angina: {exng}")
+            st.write(f"Previous Peak: {oldpeak}")
+
+    if st.button("Back to Home"):
+        st.session_state['page'] = 'landing'
+        st.experimental_rerun()
+
+
+
 
 # Function for the contact page
 def contact_page():
-    # st.markdown(page_bg_img, unsafe_allow_html=True)
+   
+    st.markdown(page_bg_img, unsafe_allow_html=True)
     st.markdown("<h1 class='head1'>Get In Touch With Us</h1>", unsafe_allow_html=True)
     
     st.write("We would love to hear from you!")
@@ -223,7 +258,13 @@ def contact_page():
         if submit_button:
             st.success(f"Thank you for reaching out! We will get back to you soon, {name}")
     
-   
+    if st.button("Back to Home"):
+        st.session_state['page'] = 'landing'
+        st.experimental_rerun()
+
+
+
+
 # Set up the SQLite database connection
 conn = create_connection()
 create_table(conn)
@@ -238,5 +279,11 @@ if st.session_state['page'] == 'registration':
     registration_page(conn)
 elif st.session_state['page'] == 'login':
     login_page(conn)
-elif st.session_state['page'] == 'landing':
+elif st.session_state['page'] == 'landing' and st.session_state.get('authenticated', False):
     landing_page()
+elif st.session_state['page'] == 'analysis':
+    analysis_page()
+elif st.session_state['page'] == 'prediction':
+    prediction_page()
+elif st.session_state['page'] == 'contact':
+    contact_page()
