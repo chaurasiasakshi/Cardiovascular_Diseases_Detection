@@ -168,21 +168,7 @@ def landing_page():
         contact_page()  
 
 def prediction_page():
-    # st.markdown(page_bg_img, unsafe_allow_html=True)
-    
-    # st.markdown(
-    #     """
-    #     <style>
-    #     .main {
-    #         display: flex;
-    #         justify-content: center;
-    #         align-items: center;
-    #         height: 100vh;
-    #     }
-    #     </style>
-    #     """,
-    #     unsafe_allow_html=True
-    # )
+
 
     with st.form(key='heart_disease_form'):
         st.title('Heart Disease Detection Form')
